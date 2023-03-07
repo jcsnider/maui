@@ -1,0 +1,1350 @@
+From 482eb9c65ec492a3bc171521fb38a0d2104d5787 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Thu, 27 Oct 2022 14:49:02 +0200
+Subject: [PATCH 01/19] Added sample to the Gallery
+
+---
+ .../BorderGalleries/BorderClipPlayground.xaml | 101 ++++++++++++++++++
+ .../BorderClipPlayground.xaml.cs              |  94 ++++++++++++++++
+ .../Pages/Core/BorderGalleries/BorderPage.cs  |   2 +
+ 3 files changed, 197 insertions(+)
+ create mode 100644 src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+ create mode 100644 src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+new file mode 100644
+index 00000000000..713fe8a7da9
+--- /dev/null
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+@@ -0,0 +1,101 @@
++﻿<?xml version="1.0" encoding="utf-8" ?>
++<views:BasePage 
++    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
++    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
++    x:Class="Maui.Controls.Sample.Pages.BorderClipPlayground"
++    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
++    Title="Borders">
++    <views:BasePage.Resources>
++        <ResourceDictionary>
++
++            <Style x:Key="InfoStyle" TargetType="Label">
++                <Setter Property="FontSize" Value="8" />
++            </Style>
++
++        </ResourceDictionary>
++    </views:BasePage.Resources>
++    <Grid
++        Padding="12">
++        <Grid.RowDefinitions>
++            <RowDefinition Height="80" />
++            <RowDefinition Height="*"/>
++        </Grid.RowDefinitions>
++       
++        <Border x:Name="BorderView" Margin="5"
++                Background="Yellow" Stroke="Red">
++            <Image x:Name="BorderContent" Aspect="AspectFill" Source="oasis.jpg" />
++        </Border>
++
++        <ScrollView
++            Grid.Row="1">
++            <StackLayout>
++                <Label
++                    Text="Border Shape"
++                    Style="{StaticResource Headline}"/>
++                <Picker
++                    x:Name="BorderShapePicker"
++                    SelectedIndexChanged="OnBorderShapeSelectedIndexChanged">
++                    <Picker.ItemsSource>
++                        <x:Array Type="{x:Type x:String}">
++                            <x:String>Rectangle</x:String>
++                            <x:String>RoundRectangle</x:String>
++                            <x:String>Ellipse</x:String>
++                        </x:Array>
++                    </Picker.ItemsSource>
++                </Picker>
++                <Label
++                    Text="Border"
++                    Style="{StaticResource Headline}"/>
++                <Label 
++                    Text="{Binding Source={x:Reference BorderWidthSlider}, Path=Value, StringFormat='{}Border Width: {0}'}"
++                    Style="{StaticResource InfoStyle}" />
++                <Slider
++                    x:Name="BorderWidthSlider" 
++                    Maximum="20" 
++                    Minimum="0" 
++                    Value="5"
++                    ValueChanged="OnBorderWidthChanged" />
++                <StackLayout
++                    x:Name="CornerRadiusLayout">
++                    <Label
++                        Text="Corner Radius"
++                        Style="{StaticResource Headline}"/>
++                    <Label 
++                        Text="{Binding Source={x:Reference TopLeftCornerSlider}, Path=Value, StringFormat='{}Top Left Corner Radius: {0}'}"
++                        Style="{StaticResource InfoStyle}"/>
++                    <Slider 
++                        x:Name="TopLeftCornerSlider"
++                        Maximum="60" 
++                        Minimum="0" 
++                        Value="20"
++                        ValueChanged="OnCornerRadiusChanged" />
++                    <Label 
++                        Text="{Binding Source={x:Reference TopRightCornerSlider}, Path=Value, StringFormat='{}Top Right Corner Radius: {0}'}"
++                        Style="{StaticResource InfoStyle}" />
++                    <Slider
++                        x:Name="TopRightCornerSlider" 
++                        Maximum="60" 
++                        Minimum="6" 
++                        ValueChanged="OnCornerRadiusChanged" />
++                    <Label 
++                        Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
++                        Style="{StaticResource InfoStyle}" />
++                    <Slider 
++                        x:Name="BottomLeftCornerSlider" 
++                        Maximum="60" 
++                        Minimum="6" 
++                        ValueChanged="OnCornerRadiusChanged" />
++                    <Label 
++                        Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
++                        Style="{StaticResource InfoStyle}" />
++                    <Slider 
++                        x:Name="BottomRightCornerSlider" 
++                        Maximum="60"
++                        Minimum="0"
++                        Value="12"
++                        ValueChanged="OnCornerRadiusChanged" />
++                </StackLayout>
++            </StackLayout>
++        </ScrollView>
++    </Grid>
++</views:BasePage>
+\ No newline at end of file
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs
+new file mode 100644
+index 00000000000..792fa13740a
+--- /dev/null
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs
+@@ -0,0 +1,94 @@
++﻿using System;
++using Microsoft.Maui;
++using Microsoft.Maui.Controls;
++using Microsoft.Maui.Controls.Shapes;
++using Microsoft.Maui.Graphics;
++
++namespace Maui.Controls.Sample.Pages
++{
++	public partial class BorderClipPlayground
++	{
++		public BorderClipPlayground()
++		{
++			InitializeComponent();
++
++			BorderShapePicker.SelectedIndex = 1;
++
++			UpdateBorder();
++			UpdateCornerRadius();
++		}
++
++		void OnBorderShapeSelectedIndexChanged(object sender, EventArgs e)
++		{
++			UpdateBorderShape();
++		}
++
++		void OnBorderChanged(object sender, TextChangedEventArgs e)
++		{
++			UpdateBorder();
++		}
++
++		void OnBorderWidthChanged(object sender, ValueChangedEventArgs e)
++		{
++			UpdateBorder();
++		}
++			
++		void OnCornerRadiusChanged(object sender, ValueChangedEventArgs e)
++		{
++			UpdateCornerRadius();
++		}
++
++		void UpdateBorderShape()
++		{
++			CornerRadiusLayout.IsVisible = BorderShapePicker.SelectedIndex == 1;
++
++			UpdateBorder();
++		}
++
++		void UpdateBorder()
++		{
++			Shape borderShape = null;
++
++			switch (BorderShapePicker.SelectedIndex)
++			{
++				case 0:
++					borderShape = new Microsoft.Maui.Controls.Shapes.Rectangle();
++					break;
++				case 1:
++					borderShape = new RoundRectangle
++					{
++						CornerRadius = new CornerRadius(TopLeftCornerSlider.Value, TopRightCornerSlider.Value,
++						BottomLeftCornerSlider.Value, BottomRightCornerSlider.Value)
++					};
++					break;
++				case 2:
++					borderShape = new Ellipse();
++					break;
++			}
++
++			BorderView.StrokeShape = borderShape;
++
++			BorderView.StrokeThickness = BorderWidthSlider.Value;
++		}
++
++		void UpdateCornerRadius()
++		{
++			UpdateBorder();
++		}
++
++		Color GetColorFromString(string value)
++		{
++			if (string.IsNullOrEmpty(value))
++				return Colors.Transparent;
++
++			try
++			{
++				return Color.FromArgb(value);
++			}
++			catch (Exception)
++			{
++				return Colors.Transparent;
++			}
++		}
++	}
++}
+\ No newline at end of file
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+index 85814641f93..bc823d3b4c1 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+@@ -23,6 +23,8 @@ public BorderPage()
+ 						descriptionLabel,
+ 						GalleryBuilder.NavButton("Border Playground", () =>
+ 							new BorderPlayground(), Navigation),
++						GalleryBuilder.NavButton("Border Clipping Playground", () =>
++							new BorderClipPlayground(), Navigation),
+ 						GalleryBuilder.NavButton("Border using styles", () =>
+ 							new BorderStyles(), Navigation),
+ 					}
+
+From 0cc632ff92373712be21de3e24ca58d1a12e32e4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Thu, 27 Oct 2022 14:49:25 +0200
+Subject: [PATCH 02/19] Fix clipping issues with some views
+
+---
+ src/Core/src/Platform/iOS/ContentView.cs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index 9a4d87d433c..99a48963e4a 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -97,7 +97,7 @@ public override void SetNeedsLayout()
+ 
+ 			var child = Subviews[0];
+ 
+-			if (child.Layer == null || child.Layer.Sublayers == null)
++			if (child.Layer == null)
+ 				return null;
+ 
+ 			return child.Layer;
+
+From 6db5c2ddfcb9a1891566c3b5691e14f30027fcf1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Thu, 27 Oct 2022 18:31:11 +0200
+Subject: [PATCH 03/19] Updated samples
+
+---
+ .../Pages/Core/BorderGalleries/BorderClipPlayground.xaml   | 7 ++++---
+ .../Pages/Core/BorderGalleries/BorderPlayground.xaml       | 4 ++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+index 713fe8a7da9..0dfcc8eb9a6 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+@@ -22,7 +22,8 @@
+         </Grid.RowDefinitions>
+        
+         <Border x:Name="BorderView" Margin="5"
+-                Background="Yellow" Stroke="Red">
++                Stroke="Red" Padding="0"
++                HorizontalOptions="Center" HeightRequest="100" WidthRequest="100">
+             <Image x:Name="BorderContent" Aspect="AspectFill" Source="oasis.jpg" />
+         </Border>
+ 
+@@ -75,7 +76,7 @@
+                     <Slider
+                         x:Name="TopRightCornerSlider" 
+                         Maximum="60" 
+-                        Minimum="6" 
++                        Minimum="0" 
+                         ValueChanged="OnCornerRadiusChanged" />
+                     <Label 
+                         Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
+@@ -83,7 +84,7 @@
+                     <Slider 
+                         x:Name="BottomLeftCornerSlider" 
+                         Maximum="60" 
+-                        Minimum="6" 
++                        Minimum="0" 
+                         ValueChanged="OnCornerRadiusChanged" />
+                     <Label 
+                         Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml
+index 6077add58e0..2b3bc408635 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml
+@@ -167,7 +167,7 @@
+                     <Slider
+                         x:Name="TopRightCornerSlider" 
+                         Maximum="60" 
+-                        Minimum="6" 
++                        Minimum="0" 
+                         ValueChanged="OnCornerRadiusChanged" />
+                     <Label 
+                         Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
+@@ -175,7 +175,7 @@
+                     <Slider 
+                         x:Name="BottomLeftCornerSlider" 
+                         Maximum="60" 
+-                        Minimum="6" 
++                        Minimum="0" 
+                         ValueChanged="OnCornerRadiusChanged" />
+                     <Label 
+                         Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
+
+From e02175e75c8dad5e7ba7abe065f28f5e5492b9d0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Thu, 27 Oct 2022 18:31:27 +0200
+Subject: [PATCH 04/19] Fix issue in the custom CALayer
+
+---
+ src/Core/src/Platform/iOS/MauiCALayer.cs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Core/src/Platform/iOS/MauiCALayer.cs b/src/Core/src/Platform/iOS/MauiCALayer.cs
+index ccb3ba7c342..2612b28f201 100644
+--- a/src/Core/src/Platform/iOS/MauiCALayer.cs
++++ b/src/Core/src/Platform/iOS/MauiCALayer.cs
+@@ -311,7 +311,7 @@ void DrawBorder(CGContext ctx)
+ 			if (IsBorderDashed())
+ 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
+ 
+-			ctx.SetLineWidth(_strokeThickness);
++			ctx.SetLineWidth(2 * _strokeThickness);
+ 
+ 			ctx.SetLineCap(_strokeLineCap);
+ 			ctx.SetLineJoin(_strokeLineJoin);
+
+From 43dd714d2750505ffc0635b64eacdc35deeb6f69 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Thu, 27 Oct 2022 18:53:43 +0200
+Subject: [PATCH 05/19] More changes in samples
+
+---
+ .../Pages/Core/BorderGalleries/BorderClipPlayground.xaml        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+index 0dfcc8eb9a6..f5ea28b6079 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml
+@@ -68,7 +68,7 @@
+                         x:Name="TopLeftCornerSlider"
+                         Maximum="60" 
+                         Minimum="0" 
+-                        Value="20"
++                        Value="60"
+                         ValueChanged="OnCornerRadiusChanged" />
+                     <Label 
+                         Text="{Binding Source={x:Reference TopRightCornerSlider}, Path=Value, StringFormat='{}Top Right Corner Radius: {0}'}"
+
+From 49eb030d4fe1041c328c5bdfe77ccf3e6f27ad56 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Thu, 27 Oct 2022 18:59:48 +0200
+Subject: [PATCH 06/19] Fixed clipping size issue
+
+---
+ src/Core/src/Platform/iOS/ContentView.cs | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index 99a48963e4a..4611f0eb7cc 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -108,21 +108,22 @@ void SetClip()
+ 			if (Subviews.Length == 0)
+ 				return;
+ 
+-			var mask = ChildMaskLayer;
++			var maskLayer = ChildMaskLayer;
+ 
+-			if (mask == null && Clip == null)
++			if (maskLayer == null && Clip == null)
+ 				return;
+ 
+-			mask ??= ChildMaskLayer = new CAShapeLayer();
++			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
+ 
+ 			var frame = Frame;
+-
+-			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
++			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
++			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * 2), (float)frame.Height - (strokeThickness * 2));
+ 
+ 			IShape? clipShape = Clip?.Shape;
+ 			var path = clipShape?.PathForBounds(bounds);
+ 			var nativePath = path?.AsCGPath();
+-			mask.Path = nativePath;
++
++			maskLayer.Path = nativePath;
+ 		}
+ 	}
+ }
+\ No newline at end of file
+
+From ce4afa8708d3baf79e68539215d677267131dba5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Wed, 7 Dec 2022 17:54:48 +0100
+Subject: [PATCH 07/19] Updated implementation
+
+---
+ src/Core/src/Platform/iOS/ContentView.cs | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index 4611f0eb7cc..755018e3f52 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -1,6 +1,7 @@
+ ﻿using System;
+ using CoreAnimation;
+ using CoreGraphics;
++using Microsoft.Maui.Devices;
+ using Microsoft.Maui.Graphics;
+ using Microsoft.Maui.Graphics.Platform;
+ 
+@@ -117,7 +118,11 @@ void SetClip()
+ 
+ 			var frame = Frame;
+ 			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
+-			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * 2), (float)frame.Height - (strokeThickness * 2));
++
++			var displayInfo = DeviceDisplay.MainDisplayInfo;
++			var displayDensity = (float)displayInfo.Density;
++
++			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * displayDensity), (float)frame.Height - (strokeThickness * displayDensity));
+ 
+ 			IShape? clipShape = Clip?.Shape;
+ 			var path = clipShape?.PathForBounds(bounds);
+
+From 20aaa2a1ca1810d0667f065f56f3669bbc688fff Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Fri, 9 Dec 2022 12:52:13 +0100
+Subject: [PATCH 08/19] Added comment in MauiCALayer
+
+---
+ src/Core/src/Platform/iOS/MauiCALayer.cs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/Core/src/Platform/iOS/MauiCALayer.cs b/src/Core/src/Platform/iOS/MauiCALayer.cs
+index 2612b28f201..b91a8b22000 100644
+--- a/src/Core/src/Platform/iOS/MauiCALayer.cs
++++ b/src/Core/src/Platform/iOS/MauiCALayer.cs
+@@ -311,6 +311,7 @@ void DrawBorder(CGContext ctx)
+ 			if (IsBorderDashed())
+ 				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
+ 
++			// The Stroke is inner and we are clipping the outer, for that reason, we use the double to get the correct value.
+ 			ctx.SetLineWidth(2 * _strokeThickness);
+ 
+ 			ctx.SetLineCap(_strokeLineCap);
+
+From 83a87ce8db6658cd15198652fe392846d71e230e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Fri, 9 Dec 2022 14:13:03 +0100
+Subject: [PATCH 09/19] Use correct inner path (different corner radius) using
+ a RoundRectangle
+
+---
+ .../Core/HandlerImpl/RoundRectangle.Impl.cs   | 37 ++++++++++++++++++-
+ src/Core/src/Graphics/IShape.cs               |  5 +++
+ src/Core/src/Platform/iOS/ContentView.cs      | 13 ++++++-
+ 3 files changed, 52 insertions(+), 3 deletions(-)
+
+diff --git a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+index 1c4e6c38dfe..a62a735e0c2 100644
+--- a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
++++ b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+@@ -1,9 +1,10 @@
+-﻿using System.Runtime.CompilerServices;
++﻿using System;
++using System.Runtime.CompilerServices;
+ using Microsoft.Maui.Graphics;
+ 
+ namespace Microsoft.Maui.Controls.Shapes
+ {
+-	public partial class RoundRectangle : IShape
++	public partial class RoundRectangle : IRoundRectangle
+ 	{
+ 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+ 		{
+@@ -32,5 +33,37 @@ public override PathF GetPath()
+ 
+ 			return path;
+ 		}
++
++		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
++		{
++			if (HeightRequest < 0 && WidthRequest < 0)
++			{
++				Frame = viewBounds;
++			}
++
++			var path = GetInnerPath(strokeWidth);
++
++			return path;
++		}
++
++		internal PathF GetInnerPath(float strokeWidth)
++		{
++			var path = new PathF();
++
++			float x = (float)StrokeThickness / 2;
++			float y = (float)StrokeThickness / 2;
++
++			float w = (float)(Width - StrokeThickness);
++			float h = (float)(Height - StrokeThickness);
++
++			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeWidth);
++			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeWidth);
++			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft - strokeWidth);
++			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight - strokeWidth);
++
++			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
++
++			return path;
++		}
+ 	}
+ }
+\ No newline at end of file
+diff --git a/src/Core/src/Graphics/IShape.cs b/src/Core/src/Graphics/IShape.cs
+index 5affdc73404..3b0cfddc51c 100644
+--- a/src/Core/src/Graphics/IShape.cs
++++ b/src/Core/src/Graphics/IShape.cs
+@@ -8,4 +8,9 @@ public interface IShape
+ 	{
+ 		PathF PathForBounds(Rect bounds);
+ 	}
++
++	internal interface IRoundRectangle : IShape
++	{
++		PathF InnerPathForBounds(Rect bounds, float strokeThickness);
++	}
+ }
+\ No newline at end of file
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index 755018e3f52..02caa18a324 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -13,6 +13,11 @@ public class ContentView : MauiView
+ 		CAShapeLayer? _childMaskLayer;
+ 		internal event EventHandler? LayoutSubviewsChanged;
+ 
++		public ContentView()
++		{
++			Layer.CornerCurve = CACornerCurve.Continuous;
++		}
++
+ 		public override CGSize SizeThatFits(CGSize size)
+ 		{
+ 			if (CrossPlatformMeasure == null)
+@@ -125,7 +130,13 @@ void SetClip()
+ 			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * displayDensity), (float)frame.Height - (strokeThickness * displayDensity));
+ 
+ 			IShape? clipShape = Clip?.Shape;
+-			var path = clipShape?.PathForBounds(bounds);
++			PathF? path;
++
++			if (clipShape is IRoundRectangle roundRectangle)
++				path = roundRectangle.InnerPathForBounds(bounds, strokeThickness);
++			else
++				path = clipShape?.PathForBounds(bounds);
++
+ 			var nativePath = path?.AsCGPath();
+ 
+ 			maskLayer.Path = nativePath;
+
+From d683a12294349728c37cf5acc234fe5090bccc8b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Mon, 16 Jan 2023 17:11:07 +0100
+Subject: [PATCH 10/19] Updated sample
+
+---
+ .../BorderGalleries/BorderPlayground.xaml     | 15 ++++++++++-
+ .../BorderGalleries/BorderPlayground.xaml.cs  | 27 ++++++++++++++++++-
+ 2 files changed, 40 insertions(+), 2 deletions(-)
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml
+index 2b3bc408635..55e4d5958f6 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml
+@@ -17,7 +17,7 @@
+     <Grid
+         Padding="12">
+         <Grid.RowDefinitions>
+-            <RowDefinition Height="80" />
++            <RowDefinition Height="200" />
+             <RowDefinition Height="*"/>
+         </Grid.RowDefinitions>
+        
+@@ -28,6 +28,19 @@
+         <ScrollView
+             Grid.Row="1">
+             <StackLayout>
++                <Label
++                    Text="Border Content"
++                    Style="{StaticResource Headline}"/>
++                <Picker
++                    x:Name="BorderContentPicker"
++                    SelectedIndexChanged="OnBorderContentSelectedIndexChanged">
++                    <Picker.ItemsSource>
++                        <x:Array Type="{x:Type x:String}">
++                            <x:String>Label</x:String>
++                            <x:String>Image</x:String>
++                        </x:Array>
++                    </Picker.ItemsSource>
++                </Picker>
+                 <Label
+                     Text="Border Shape"
+                     Style="{StaticResource Headline}"/>
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml.cs
+index 7045c98bed4..26b677f6d5a 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml.cs
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPlayground.xaml.cs
+@@ -12,6 +12,7 @@ public BorderPlayground()
+ 		{
+ 			InitializeComponent();
+ 
++			BorderContentPicker.SelectedIndex = 0;
+ 			BorderShapePicker.SelectedIndex = 1;
+ 			BorderLineJoinPicker.SelectedIndex = 0;
+ 			BorderLineCapPicker.SelectedIndex = 0;
+@@ -22,6 +23,12 @@ public BorderPlayground()
+ 			UpdateCornerRadius();
+ 		}
+ 
++		void OnBorderContentSelectedIndexChanged(object sender, EventArgs e)
++		{
++			UpdateBorderContent();
++			UpdateBorder();
++		}
++
+ 		void OnBorderShapeSelectedIndexChanged(object sender, EventArgs e)
+ 		{
+ 			UpdateBorderShape();
+@@ -101,7 +108,25 @@ void UpdateBackground()
+ 
+ 		void UpdateContentBackground()
+ 		{
+-			BorderContent.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
++			if (BorderView.Content is View content)
++				content.BackgroundColor = ContentBackgroundCheckBox.IsChecked ? Color.FromArgb("#99FF0000") : Colors.Transparent;
++		}
++
++		void UpdateBorderContent()
++		{
++			View content = null;
++
++			switch (BorderContentPicker.SelectedIndex)
++			{
++				case 0:
++					content = new Label { Text = "Just a Label", FontSize = 20 };
++					break;
++				case 1:
++					content = new Image { Aspect = Aspect.AspectFill, Source = "oasis.jpg" };
++					break;
++			}
++
++			BorderView.Content = content;
+ 		}
+ 
+ 		void UpdateBorder()
+
+From a09417c38dbe5a41c5a0e1995a407ddaa8866e47 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Wed, 18 Jan 2023 16:16:15 +0100
+Subject: [PATCH 11/19] Fix clipping issues changing the Border content
+
+---
+ src/Core/src/Handlers/Border/BorderHandler.iOS.cs | 6 +++++-
+ src/Core/src/Platform/iOS/ContentView.cs          | 2 +-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/Core/src/Handlers/Border/BorderHandler.iOS.cs b/src/Core/src/Handlers/Border/BorderHandler.iOS.cs
+index a20f48163d3..353c5876fe7 100644
+--- a/src/Core/src/Handlers/Border/BorderHandler.iOS.cs
++++ b/src/Core/src/Handlers/Border/BorderHandler.iOS.cs
+@@ -1,5 +1,6 @@
+ ﻿using System;
+ using System.Linq;
++using Microsoft.Maui.Platform;
+ using PlatformView = UIKit.UIView;
+ 
+ namespace Microsoft.Maui.Handlers
+@@ -49,12 +50,15 @@ static void UpdateContent(IBorderHandler handler)
+ 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+ 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+ 
+-			//Cleanup the old view when reused
++			// Cleanup the old view when reused
+ 			var oldChildren = handler.PlatformView.Subviews.ToList();
+ 			oldChildren.ForEach(x => x.RemoveFromSuperview());
+ 
+ 			if (handler.VirtualView.PresentedContent is IView view)
++			{
+ 				handler.PlatformView.AddSubview(view.ToPlatform(handler.MauiContext));
++				handler.PlatformView.ChildMaskLayer = null;
++			}
+ 		}
+ 
+ 		public static void MapContent(IBorderHandler handler, IBorderView border)
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index 02caa18a324..35f3c018281 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -79,7 +79,7 @@ public override void SetNeedsLayout()
+ 			}
+ 		}
+ 
+-		CAShapeLayer? ChildMaskLayer
++		internal CAShapeLayer? ChildMaskLayer
+ 		{
+ 			get => _childMaskLayer;
+ 			set
+
+From d2196e203d4749a9648e7bc28a20e412f03e4a03 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Wed, 18 Jan 2023 17:13:23 +0100
+Subject: [PATCH 12/19] More samples
+
+---
+ .../Core/BorderGalleries/BorderLayout.xaml    | 55 +++++++++++++++++++
+ .../Core/BorderGalleries/BorderLayout.xaml.cs | 12 ++++
+ .../Pages/Core/BorderGalleries/BorderPage.cs  |  2 +
+ 3 files changed, 69 insertions(+)
+ create mode 100644 src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml
+ create mode 100644 src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml.cs
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml
+new file mode 100644
+index 00000000000..e03dfaeff3d
+--- /dev/null
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml
+@@ -0,0 +1,55 @@
++﻿<?xml version="1.0" encoding="utf-8" ?>
++<ContentPage 
++    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
++    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
++    x:Class="Maui.Controls.Sample.Pages.BorderLayout"
++    Title="Border using Layouts">
++    <ContentPage.Content>
++        <StackLayout 
++            Margin="12" 
++            Spacing="12">
++          <Border
++                StrokeThickness="20"
++                Stroke="Silver"
++                Background="White"
++                Margin="0"
++                Padding="0">
++            <Border.StrokeShape>
++                <RoundRectangle
++                    CornerRadius="30" />
++            </Border.StrokeShape>
++            <Grid
++                HeightRequest="30"
++                BackgroundColor="Green">
++                <StackLayout
++                    Orientation="Horizontal">
++                    <Frame
++                        Padding="0"
++                        HasShadow="false"
++                        BackgroundColor="Red"
++                        HeightRequest="40"
++                        WidthRequest="40"
++                        VerticalOptions="Center" >
++                    </Frame>
++                    <Label
++                        Text="Center"
++                        VerticalOptions="FillAndExpand"
++                        HorizontalOptions="FillAndExpand"
++                        FontSize="Medium"
++                        FontFamily="Bold"
++                        HorizontalTextAlignment="Center"
++                        VerticalTextAlignment="Center" />
++                    <Frame
++                        Padding="0"
++                        HasShadow="false"
++                        BackgroundColor="Blue"
++                        HeightRequest="40"
++                        WidthRequest="40"
++                        VerticalOptions="Center" >
++                    </Frame>
++                </StackLayout>
++            </Grid>
++        </Border>
++        </StackLayout>
++    </ContentPage.Content>
++</ContentPage>
+\ No newline at end of file
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml.cs
+new file mode 100644
+index 00000000000..5dab129336c
+--- /dev/null
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderLayout.xaml.cs
+@@ -0,0 +1,12 @@
++﻿using Microsoft.Maui.Controls;
++
++namespace Maui.Controls.Sample.Pages
++{
++	public partial class BorderLayout : ContentPage
++	{
++		public BorderLayout()
++		{
++			InitializeComponent();
++		}
++	}
++}
+\ No newline at end of file
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+index bc823d3b4c1..91cc20cd983 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+@@ -27,6 +27,8 @@ public BorderPage()
+ 							new BorderClipPlayground(), Navigation),
+ 						GalleryBuilder.NavButton("Border using styles", () =>
+ 							new BorderStyles(), Navigation),
++						GalleryBuilder.NavButton("Border using Content Layout", () =>
++							new BorderLayout(), Navigation),
+ 					}
+ 				}
+ 			};
+
+From 4783662718de9aa2e173f2ee7b0859015c13c1f4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Wed, 18 Jan 2023 17:24:08 +0100
+Subject: [PATCH 13/19] Changes getting the clipping path
+
+---
+ .../src/Core/HandlerImpl/RoundRectangle.Impl.cs      | 10 ++++++----
+ src/Controls/src/Core/Shapes/Shape.cs                | 12 +++++++++---
+ 2 files changed, 15 insertions(+), 7 deletions(-)
+
+diff --git a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+index 7600494a570..3d94e860212 100644
+--- a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
++++ b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+@@ -47,6 +47,8 @@ PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
+ 
+ 			var path = GetInnerPath(strokeWidth);
+ 
++			base.TransformPathForBounds(path, viewBounds);
++
+ 			return path;
+ 		}
+ 
+@@ -54,11 +56,11 @@ internal PathF GetInnerPath(float strokeWidth)
+ 		{
+ 			var path = new PathF();
+ 
+-			float x = (float)StrokeThickness / 2;
+-			float y = (float)StrokeThickness / 2;
++			float x = (float)strokeWidth / 2;
++			float y = (float)strokeWidth / 2;
+ 
+-			float w = (float)(Width - StrokeThickness);
+-			float h = (float)(Height - StrokeThickness);
++			float w = (float)(Width - strokeWidth);
++			float h = (float)(Height - strokeWidth);
+ 
+ 			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeWidth);
+ 			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeWidth);
+diff --git a/src/Controls/src/Core/Shapes/Shape.cs b/src/Controls/src/Core/Shapes/Shape.cs
+index 999fe2721a6..bfae9feed8e 100644
+--- a/src/Controls/src/Core/Shapes/Shape.cs
++++ b/src/Controls/src/Core/Shapes/Shape.cs
+@@ -1,4 +1,5 @@
+-using System;
++﻿using System;
++using System.IO;
+ using System.Linq;
+ using System.Numerics;
+ using Microsoft.Extensions.Logging;
+@@ -180,6 +181,13 @@ PathF IShape.PathForBounds(Graphics.Rect viewBounds)
+ 
+ 			var path = GetPath();
+ 
++			TransformPathForBounds(path, viewBounds);
++
++			return path;
++		}
++
++		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
++		{
+ #if !(NETSTANDARD || !PLATFORM)
+ 
+ 			// TODO: not using this.GetPath().Bounds.Size;
+@@ -259,8 +267,6 @@ PathF IShape.PathForBounds(Graphics.Rect viewBounds)
+ 			if (!transform.IsIdentity)
+ 				path.Transform(transform);
+ #endif
+-
+-			return path;
+ 		}
+ 
+ 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+
+From 78256f6a85d092dff02cec7221c49d6cc18ab4d0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Sua=CC=81rez?= <javiersuarezruiz@hotmail.com>
+Date: Fri, 27 Jan 2023 14:25:21 +0100
+Subject: [PATCH 14/19] Added more samples
+
+---
+ .../Pages/Core/BorderGalleries/BorderPage.cs  |  2 +
+ .../Core/BorderGalleries/BorderStroke.xaml    | 53 +++++++++++++++++++
+ .../Core/BorderGalleries/BorderStroke.xaml.cs | 12 +++++
+ 3 files changed, 67 insertions(+)
+ create mode 100644 src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml
+ create mode 100644 src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml.cs
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+index 91cc20cd983..852d5a3d09b 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+@@ -29,6 +29,8 @@ public BorderPage()
+ 							new BorderStyles(), Navigation),
+ 						GalleryBuilder.NavButton("Border using Content Layout", () =>
+ 							new BorderLayout(), Navigation),
++						GalleryBuilder.NavButton("Border Stroke options", () =>
++							new BorderLayout(), Navigation),
+ 					}
+ 				}
+ 			};
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml
+new file mode 100644
+index 00000000000..171cfdf181c
+--- /dev/null
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml
+@@ -0,0 +1,53 @@
++﻿<?xml version="1.0" encoding="utf-8" ?>
++<ContentPage 
++    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
++    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
++    x:Class="Maui.Controls.Sample.Pages.BorderStroke"
++    Title="Border Stroke options">
++    <ContentPage.Content>
++        <ScrollView>
++            <VerticalStackLayout
++                Margin="12">
++                <Label
++                    Text="Using different StrokeThickness"
++                    Style="{StaticResource Headline}"/>
++                <Grid
++                    RowDefinitions="*,*,*">
++                    <Border
++                        Border.StrokeShape="Rectangle"
++                        Border.Stroke="Red"
++                        Border.StrokeThickness="1"
++                        Grid.Row="0">
++                        <Label
++                            Text="1"
++                            VerticalTextAlignment="Center"
++                            HorizontalTextAlignment="Center"
++                            BackgroundColor="Orange"/>
++                    </Border>
++                    <Border
++                        Border.StrokeShape="Rectangle"
++                        Border.Stroke="Red"
++                        Border.StrokeThickness="10"
++                        Grid.Row="1">
++                        <Label
++                            Text="10"
++                            VerticalTextAlignment="Center"
++                            HorizontalTextAlignment="Center"
++                            BackgroundColor="Orange"/>
++                    </Border>
++                    <Border
++                        Border.StrokeShape="Rectangle"
++                        Border.Stroke="Red"
++                        Border.StrokeThickness="25"
++                        Grid.Row="2">
++                        <Label
++                            Text="25"
++                            VerticalTextAlignment="Center"
++                            HorizontalTextAlignment="Center"
++                            BackgroundColor="Orange"/>
++                    </Border>
++                </Grid>
++            </VerticalStackLayout>
++        </ScrollView>
++    </ContentPage.Content>
++</ContentPage>
+\ No newline at end of file
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml.cs
+new file mode 100644
+index 00000000000..e1f0d0fad6d
+--- /dev/null
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml.cs
+@@ -0,0 +1,12 @@
++﻿using Microsoft.Maui.Controls;
++
++namespace Maui.Controls.Sample.Pages
++{
++	public partial class BorderStroke : ContentPage
++	{
++		public BorderStroke()
++		{
++			InitializeComponent();
++		}
++	}
++}
+\ No newline at end of file
+
+From e0a5ba5832c06e0595ce513713d877e8e9fc323d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Su=C3=A1rez?= <javiersuarezruiz@hotmail.com>
+Date: Mon, 30 Jan 2023 12:56:14 +0100
+Subject: [PATCH 15/19] Fixed mistake in a sample
+
+---
+ .../Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+index 852d5a3d09b..4d02664b3b3 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderPage.cs
+@@ -30,7 +30,7 @@ public BorderPage()
+ 						GalleryBuilder.NavButton("Border using Content Layout", () =>
+ 							new BorderLayout(), Navigation),
+ 						GalleryBuilder.NavButton("Border Stroke options", () =>
+-							new BorderLayout(), Navigation),
++							new BorderStroke(), Navigation),
+ 					}
+ 				}
+ 			};
+
+From 587ba7570bfa5165dee5e95733e684eb04574e13 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Su=C3=A1rez?= <javiersuarezruiz@hotmail.com>
+Date: Tue, 14 Feb 2023 17:01:15 +0100
+Subject: [PATCH 16/19] Updated RoundRectangle
+
+---
+ src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+index 3d94e860212..7bcefb451de 100644
+--- a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
++++ b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+@@ -40,14 +40,9 @@ public override PathF GetPath()
+ 
+ 		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
+ 		{
+-			if (HeightRequest < 0 && WidthRequest < 0)
+-			{
+-				Frame = viewBounds;
+-			}
+-
+ 			var path = GetInnerPath(strokeWidth);
+ 
+-			base.TransformPathForBounds(path, viewBounds);
++			TransformPathForBounds(path, viewBounds);
+ 
+ 			return path;
+ 		}
+
+From af2b136346abf8c94d9614bd70fb5672a1598c52 Mon Sep 17 00:00:00 2001
+From: GitHub Actions Autoformatter <autoformat@example.com>
+Date: Tue, 14 Feb 2023 16:03:33 +0000
+Subject: [PATCH 17/19] Auto-format source code
+
+---
+ .../Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs     | 2 +-
+ src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs        | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs
+index 792fa13740a..ad128334576 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderClipPlayground.xaml.cs
+@@ -32,7 +32,7 @@ void OnBorderWidthChanged(object sender, ValueChangedEventArgs e)
+ 		{
+ 			UpdateBorder();
+ 		}
+-			
++
+ 		void OnCornerRadiusChanged(object sender, ValueChangedEventArgs e)
+ 		{
+ 			UpdateCornerRadius();
+diff --git a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+index 7bcefb451de..01b1390149d 100644
+--- a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
++++ b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+@@ -1,5 +1,5 @@
+ ﻿#nullable disable
+-﻿using System;
++using System;
+ using System.Runtime.CompilerServices;
+ using Microsoft.Maui.Graphics;
+ 
+
+From f07a4a3942ee141aeef004f691f862c90a75647f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Su=C3=A1rez?= <javiersuarezruiz@hotmail.com>
+Date: Mon, 20 Feb 2023 13:55:55 +0100
+Subject: [PATCH 18/19] Fix the issue
+
+---
+ .../Core/BorderGalleries/BorderStroke.xaml    |  8 +--
+ .../Core/BorderGalleries/BorderStyles.xaml    |  3 ++
+ .../Core/HandlerImpl/RoundRectangle.Impl.cs   | 53 ++++++++++++++++---
+ .../src/Core/HandlerImpl/Shape/Shape.Impl.cs  |  7 ---
+ src/Controls/src/Core/Shapes/Shape.cs         |  4 +-
+ src/Core/src/Platform/iOS/ContentView.cs      | 12 +++--
+ 6 files changed, 64 insertions(+), 23 deletions(-)
+
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml
+index 171cfdf181c..7b1de4dadde 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStroke.xaml
+@@ -27,10 +27,10 @@
+                     <Border
+                         Border.StrokeShape="Rectangle"
+                         Border.Stroke="Red"
+-                        Border.StrokeThickness="10"
++                        Border.StrokeThickness="5"
+                         Grid.Row="1">
+                         <Label
+-                            Text="10"
++                            Text="5"
+                             VerticalTextAlignment="Center"
+                             HorizontalTextAlignment="Center"
+                             BackgroundColor="Orange"/>
+@@ -38,10 +38,10 @@
+                     <Border
+                         Border.StrokeShape="Rectangle"
+                         Border.Stroke="Red"
+-                        Border.StrokeThickness="25"
++                        Border.StrokeThickness="10"
+                         Grid.Row="2">
+                         <Label
+-                            Text="25"
++                            Text="10"
+                             VerticalTextAlignment="Center"
+                             HorizontalTextAlignment="Center"
+                             BackgroundColor="Orange"/>
+diff --git a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStyles.xaml b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStyles.xaml
+index 9f59158a1cf..8f59ffb907c 100644
+--- a/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStyles.xaml
++++ b/src/Controls/samples/Controls.Sample/Pages/Core/BorderGalleries/BorderStyles.xaml
+@@ -22,6 +22,9 @@
+         <StackLayout 
+             Margin="12" 
+             Spacing="12">
++            <Label 
++                Text="RoundRectangle 10,10,10,10"
++                Style="{StaticResource Headline}"/>
+             <Border />
+         </StackLayout>
+     </ContentPage.Content>
+diff --git a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+index 01b1390149d..487cbc69d19 100644
+--- a/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
++++ b/src/Controls/src/Core/HandlerImpl/RoundRectangle.Impl.cs
+@@ -7,6 +7,29 @@ namespace Microsoft.Maui.Controls.Shapes
+ {
+ 	public partial class RoundRectangle : IRoundRectangle
+ 	{
++		double _fallbackWidth;
++		double _fallbackHeight;
++
++		internal override double WidthForPathComputation
++		{
++			get
++			{
++				var width = Width;
++
++				return width == -1 ? _fallbackWidth : width;
++			}
++		}
++
++		internal override double HeightForPathComputation
++		{
++			get
++			{
++				var height = Height;
++
++				return height == -1 ? _fallbackHeight : height;
++			}
++		}
++
+ 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+ 		{
+ 			base.OnPropertyChanged(propertyName);
+@@ -38,9 +61,12 @@ public override PathF GetPath()
+ 			return path;
+ 		}
+ 
+-		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
++		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
+ 		{
+-			var path = GetInnerPath(strokeWidth);
++			_fallbackHeight = viewBounds.Height;
++			_fallbackWidth = viewBounds.Width;
++
++			var path = GetPath();
+ 
+ 			TransformPathForBounds(path, viewBounds);
+ 
+@@ -49,13 +75,16 @@ PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
+ 
+ 		internal PathF GetInnerPath(float strokeWidth)
+ 		{
++			var width = WidthForPathComputation;
++			var height = HeightForPathComputation;
++
+ 			var path = new PathF();
+ 
+-			float x = (float)strokeWidth / 2;
+-			float y = (float)strokeWidth / 2;
++			float x = (float)StrokeThickness / 2;
++			float y = (float)StrokeThickness / 2;
+ 
+-			float w = (float)(Width - strokeWidth);
+-			float h = (float)(Height - strokeWidth);
++			float w = (float)(width - StrokeThickness);
++			float h = (float)(height - StrokeThickness);
+ 
+ 			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeWidth);
+ 			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeWidth);
+@@ -66,5 +95,17 @@ internal PathF GetInnerPath(float strokeWidth)
+ 
+ 			return path;
+ 		}
++
++		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
++		{
++			_fallbackHeight = viewBounds.Height;
++			_fallbackWidth = viewBounds.Width;
++
++			var path = GetInnerPath(strokeWidth);
++
++			TransformPathForBounds(path, viewBounds);
++
++			return path;
++		}
+ 	}
+ }
+\ No newline at end of file
+diff --git a/src/Controls/src/Core/HandlerImpl/Shape/Shape.Impl.cs b/src/Controls/src/Core/HandlerImpl/Shape/Shape.Impl.cs
+index 3a37a4aa6f9..56a994c73bf 100644
+--- a/src/Controls/src/Core/HandlerImpl/Shape/Shape.Impl.cs
++++ b/src/Controls/src/Core/HandlerImpl/Shape/Shape.Impl.cs
+@@ -1,10 +1,3 @@
+-using System;
+-using System.Collections.Generic;
+-using System.Text;
+-using Microsoft.Maui.Controls;
+-using Microsoft.Maui.Controls.Platform;
+-using Microsoft.Maui.Handlers;
+-
+ namespace Microsoft.Maui.Controls.Shapes
+ {
+ 	public partial class Shape
+diff --git a/src/Controls/src/Core/Shapes/Shape.cs b/src/Controls/src/Core/Shapes/Shape.cs
+index bfae9feed8e..5ca42b8460b 100644
+--- a/src/Controls/src/Core/Shapes/Shape.cs
++++ b/src/Controls/src/Core/Shapes/Shape.cs
+@@ -342,7 +342,7 @@ protected override Size MeasureOverride(double widthConstraint, double heightCon
+ 			return result;
+ 		}
+ 
+-		internal double WidthForPathComputation
++		internal virtual double WidthForPathComputation
+ 		{
+ 			get
+ 			{
+@@ -354,7 +354,7 @@ internal double WidthForPathComputation
+ 			}
+ 		}
+ 
+-		internal double HeightForPathComputation
++		internal virtual double HeightForPathComputation
+ 		{
+ 			get
+ 			{
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index c59463e37a3..147f131396d 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -1,7 +1,6 @@
+ ﻿using System;
+ using CoreAnimation;
+ using CoreGraphics;
+-using Microsoft.Maui.Devices;
+ using Microsoft.Maui.Graphics;
+ using Microsoft.Maui.Graphics.Platform;
+ 
+@@ -130,12 +129,17 @@ void SetClip()
+ 			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
+ 
+ 			var frame = Frame;
++
++			if (frame == CGRect.Empty)
++				return;
++
+ 			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
+ 
+-			var displayInfo = DeviceDisplay.MainDisplayInfo;
+-			var displayDensity = (float)displayInfo.Density;
++			// In the MauiCALayer class, the Stroke is inner and we are clipping the outer, for that reason,
++			// we use the double to get the correct value. Here, again, we use the double to get the correct clip shape size values.
++			var strokeWidth = 2 * strokeThickness;
+ 
+-			var bounds = new RectF(0, 0, (float)frame.Width - (strokeThickness * displayDensity), (float)frame.Height - (strokeThickness * displayDensity));
++			var bounds = new RectF(0, 0, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
+ 
+ 			IShape? clipShape = Clip?.Shape;
+ 			PathF? path;
+
+From 4825b78df05a6aaf90cbdb9f9c944b3501381cfd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Javier=20Su=C3=A1rez?= <javiersuarezruiz@hotmail.com>
+Date: Mon, 20 Feb 2023 13:56:56 +0100
+Subject: [PATCH 19/19] Code refactoring
+
+---
+ src/Core/src/Platform/iOS/ContentView.cs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Core/src/Platform/iOS/ContentView.cs b/src/Core/src/Platform/iOS/ContentView.cs
+index 147f131396d..dc495f31deb 100644
+--- a/src/Core/src/Platform/iOS/ContentView.cs
++++ b/src/Core/src/Platform/iOS/ContentView.cs
+@@ -123,7 +123,7 @@ void SetClip()
+ 
+ 			var maskLayer = ChildMaskLayer;
+ 
+-			if (maskLayer == null && Clip == null)
++			if (maskLayer is null && Clip is null)
+ 				return;
+ 
+ 			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
