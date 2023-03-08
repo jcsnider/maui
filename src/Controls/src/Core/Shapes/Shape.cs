@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
@@ -180,6 +181,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = GetPath();
 
+			TransformPathForBounds(path, viewBounds);
+
+			return path;
+		}
+
+		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
+		{
 #if !(NETSTANDARD || !PLATFORM)
 
 			// TODO: not using this.GetPath().Bounds.Size;
@@ -259,8 +267,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (!transform.IsIdentity)
 				path.Transform(transform);
 #endif
-
-			return path;
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
@@ -336,7 +342,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return result;
 		}
 
-		internal double WidthForPathComputation
+		internal virtual double WidthForPathComputation
 		{
 			get
 			{
@@ -348,7 +354,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		internal double HeightForPathComputation
+		internal virtual double HeightForPathComputation
 		{
 			get
 			{
