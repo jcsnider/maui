@@ -150,7 +150,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				View = scrollView.PresentedContent,
 				CrossPlatformMeasure = ConstrainToScrollView(scrollView.CrossPlatformMeasure, platformScrollView, scrollView),
-				Tag = ContentPanelTag
+				Tag = ContentPanelTag,
+				ClipsToBounds = true //Content should be clipped to the bounds of the scrollview otherwise it will be visible outside the ScrollView but can not be clicked.
 			};
 
 			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView, scrollView);
@@ -164,21 +165,21 @@ namespace Microsoft.Maui.Handlers
 		{
 			return (rect) =>
 			{
+				//Value is not used because it uses the Max of two values meaning
+				//it will never shrink causing layout problems.
+				internalArrange(rect);
+
+				var contentSize = scrollView.ContentSize; //ContentSize is updated to only the minimum size needed to fit the content, this is used and not the result of internalArrange
+
 				if (container.Superview is UIScrollView uiScrollView)
 				{
-					// Ensure the container is at least the size of the UIScrollView itself, so that the 
-					// cross-platform layout logic makes sense and the contents don't arrange outside the 
-					// container. (Everything will look correct if they do, but hit testing won't work properly.)
-
-					var scrollViewBounds = uiScrollView.Bounds;
-					var containerBounds = container.Bounds;
-
+					//The container must be at least the size of the ScrollView content
 					container.Bounds = new CGRect(0, 0,
-						Math.Max(containerBounds.Width, scrollViewBounds.Width),
-						Math.Max(containerBounds.Height, scrollViewBounds.Height));
+						Math.Max(contentSize.Width, uiScrollView.Bounds.Width),
+						Math.Max(contentSize.Height, uiScrollView.Bounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-				var contentSize = internalArrange(rect);
+				
 				var size = SetContentSizeForOrientation(platformScrollView, scrollView.Orientation, contentSize);
 				return size;
 			};
