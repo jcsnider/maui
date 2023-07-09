@@ -1,2 +1,3 @@
 #nullable enable
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
+virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
